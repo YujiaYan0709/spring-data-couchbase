@@ -28,9 +28,11 @@ import org.springframework.data.couchbase.core.support.WithConsistency;
 import org.springframework.data.couchbase.core.support.WithDistinct;
 import org.springframework.data.couchbase.core.support.WithQuery;
 import org.springframework.data.couchbase.core.support.WithQueryOptions;
+import org.springframework.data.couchbase.core.support.WithTransaction;
 
 import com.couchbase.client.java.query.QueryOptions;
 import com.couchbase.client.java.query.QueryScanConsistency;
+import com.couchbase.transactions.AttemptContextReactive;
 
 /**
  * ReactiveFindByQueryOperation<br>
@@ -128,7 +130,7 @@ public interface ReactiveFindByQueryOperation {
 		/**
 		 * @param options options to use for execution
 		 */
-		TerminatingFindByQuery<T> withOptions(QueryOptions options);
+		FindByQueryWithQuery<T> withOptions(QueryOptions options);
 	}
 
 	/**
@@ -233,7 +235,24 @@ public interface ReactiveFindByQueryOperation {
 		 * @return new instance of {@link ReactiveFindByQuery}.
 		 * @throws IllegalArgumentException if field is {@literal null}.
 		 */
-		FindByQueryWithProjection<T> distinct(String[] distinctFields);
+		FindByQueryWithProjecting<T> distinct(String[] distinctFields);
+	}
+
+	/**
+	 * Fluent method to add transactions
+	 *
+	 * @param <T> the entity type to use for the results.
+	 */
+	interface FindByQueryWithTransaction<T> extends FindByQueryWithDistinct<T>, WithTransaction<T> {
+
+		/**
+		 * Finds the distinct values for a specified {@literal field} across a single {@link } or view.
+		 *
+		 * @param txCtx Must not be {@literal null}.
+		 * @return new instance of {@link ReactiveFindByQuery}.
+		 * @throws IllegalArgumentException if field is {@literal null}.
+		 */
+		FindByQueryWithDistinct<T> transaction(AttemptContextReactive txCtx);
 	}
 
 	/**
@@ -241,6 +260,6 @@ public interface ReactiveFindByQueryOperation {
 	 *
 	 * @param <T> the entity type to use for the results
 	 */
-	interface ReactiveFindByQuery<T> extends FindByQueryWithDistinct<T> {}
+	interface ReactiveFindByQuery<T> extends FindByQueryWithTransaction<T> {}
 
 }

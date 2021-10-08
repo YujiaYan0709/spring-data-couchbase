@@ -15,6 +15,7 @@
  */
 package org.springframework.data.couchbase.core;
 
+import org.springframework.data.couchbase.core.support.WithTransaction;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -30,6 +31,7 @@ import com.couchbase.client.core.msg.kv.DurabilityLevel;
 import com.couchbase.client.java.kv.PersistTo;
 import com.couchbase.client.java.kv.RemoveOptions;
 import com.couchbase.client.java.kv.ReplicateTo;
+import com.couchbase.transactions.AttemptContextReactive;
 
 /**
  * Remove Operations on KV service.
@@ -89,7 +91,7 @@ public interface ReactiveRemoveByIdOperation {
 	/**
 	 * Fluent method to specify the collection.
 	 */
-	interface RemoveByIdInCollection extends RemoveByIdWithOptions, InCollection<Object> {
+	interface RemoveByIdInCollection extends RemoveByIdWithOptions, InCollection<RemoveResult> {
 		/**
 		 * With a different collection
 		 *
@@ -101,7 +103,7 @@ public interface ReactiveRemoveByIdOperation {
 	/**
 	 * Fluent method to specify the scope.
 	 */
-	interface RemoveByIdInScope extends RemoveByIdInCollection, InScope<Object> {
+	interface RemoveByIdInScope extends RemoveByIdInCollection, InScope<RemoveResult> {
 		/**
 		 * With a different scope
 		 *
@@ -124,9 +126,13 @@ public interface ReactiveRemoveByIdOperation {
 		RemoveByIdWithDurability withCas(Long cas);
 	}
 
+	interface RemoveByIdWithTransaction extends RemoveByIdWithCas, WithTransaction<RemoveResult> {
+		RemoveByIdWithCas transaction(AttemptContextReactive txCtx);
+	}
+
 	/**
 	 * Provides methods for constructing remove operations in a fluent way.
 	 */
-	interface ReactiveRemoveById extends RemoveByIdWithCas {}
+	interface ReactiveRemoveById extends RemoveByIdWithTransaction {};
 
 }

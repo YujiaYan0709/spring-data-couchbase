@@ -18,14 +18,16 @@ package org.springframework.data.couchbase.core;
 import java.time.Duration;
 import java.util.Collection;
 
-import org.springframework.data.couchbase.core.support.OneAndAllId;
 import org.springframework.data.couchbase.core.support.InCollection;
+import org.springframework.data.couchbase.core.support.InScope;
+import org.springframework.data.couchbase.core.support.OneAndAllId;
 import org.springframework.data.couchbase.core.support.WithGetOptions;
 import org.springframework.data.couchbase.core.support.WithProjectionId;
-import org.springframework.data.couchbase.core.support.InScope;
+import org.springframework.data.couchbase.core.support.WithTransaction;
 
 import com.couchbase.client.java.kv.GetOptions;
 import org.springframework.data.couchbase.core.support.WithExpiry;
+import com.couchbase.transactions.AttemptContextReactive;
 
 /**
  * Get Operations
@@ -133,10 +135,27 @@ public interface ExecutableFindByIdOperation {
 	}
 
 	/**
+	 * Provide attempt context
+	 *
+	 * @param <T> the entity type to use for the results
+	 */
+	interface FindByIdWithTransaction<T> extends FindByIdWithExpiry<T>, WithTransaction<T> {
+		/**
+		 * Finds the distinct values for a specified {@literal field} across a single collection
+		 *
+		 * @param txCtx Must not be {@literal null}.
+		 * @return new instance of {@link ExecutableFindById}.
+		 * @throws IllegalArgumentException if field is {@literal null}.
+		 */
+		@Override
+		FindByIdWithProjection<T> transaction(AttemptContextReactive txCtx);
+	}
+
+	/**
 	 * Provides methods for constructing query operations in a fluent way.
 	 *
 	 * @param <T> the entity type to use for the results
 	 */
-	interface ExecutableFindById<T> extends FindByIdWithExpiry<T> {}
+	interface ExecutableFindById<T> extends FindByIdWithTransaction<T> {}
 
 }

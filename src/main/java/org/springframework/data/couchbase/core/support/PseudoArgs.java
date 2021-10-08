@@ -22,16 +22,19 @@ import static org.springframework.data.couchbase.core.query.OptionsBuilder.getSc
 import org.springframework.data.couchbase.core.ReactiveCouchbaseTemplate;
 
 import com.couchbase.client.core.io.CollectionIdentifier;
+import com.couchbase.transactions.AttemptContextReactive;
 
 public class PseudoArgs<OPTS> {
 	private final OPTS options;
 	private final String scopeName;
 	private final String collectionName;
+	private final AttemptContextReactive ctx;
 
-	public PseudoArgs(String scopeName, String collectionName, OPTS options) {
+	public PseudoArgs(String scopeName, String collectionName, OPTS options, AttemptContextReactive ctx) {
 		this.options = options;
 		this.scopeName = scopeName;
 		this.collectionName = collectionName;
+		this.ctx = ctx;
 	}
 
 	/**
@@ -47,11 +50,12 @@ public class PseudoArgs<OPTS> {
 	 * @param domainType - entity that may have annotations
 	 */
 	public PseudoArgs(ReactiveCouchbaseTemplate template, String scope, String collection, OPTS options,
-			Class<?> domainType) {
+			AttemptContextReactive ctx, Class<?> domainType) {
 
 		String scopeForQuery = null;
 		String collectionForQuery = null;
 		OPTS optionsForQuery = null;
+		AttemptContextReactive ctxForQuery = null;
 
 		// 1) repository from DynamicProxy via template threadLocal - has precedence over annotation
 
@@ -61,16 +65,18 @@ public class PseudoArgs<OPTS> {
 			scopeForQuery = threadLocal.getScope();
 			collectionForQuery = threadLocal.getCollection();
 			optionsForQuery = threadLocal.getOptions();
+			ctxForQuery = threadLocal.getCtx();
 		}
 
 		scopeForQuery = fromFirst(null, scopeForQuery, scope, getScopeFrom(domainType));
 		collectionForQuery = fromFirst(null, collectionForQuery, collection, getCollectionFrom(domainType));
 		optionsForQuery = fromFirst(null, options, optionsForQuery);
+		ctxForQuery = fromFirst( null, ctx, ctxForQuery);
 
 		// if a collection was specified but no scope, use the scope from the clientFactory
 
 		if (collectionForQuery != null && scopeForQuery == null) {
-			scopeForQuery = template.getCouchbaseClientFactory().getScope().name();
+			scopeForQuery = template.getScopeName();
 		}
 
 		// specifying scope and collection = _default is not necessary and will fail if server doesn't have collections
@@ -85,6 +91,7 @@ public class PseudoArgs<OPTS> {
 		this.scopeName = scopeForQuery;
 		this.collectionName = collectionForQuery;
 		this.options = optionsForQuery;
+		this.ctx = ctxForQuery;
 
 	}
 
@@ -109,8 +116,16 @@ public class PseudoArgs<OPTS> {
 		return this.collectionName;
 	}
 
+	/**
+	 * @return the attempt context
+	 */
+	public AttemptContextReactive getCtx() {
+		return ctx;
+	}
+
 	@Override
 	public String toString() {
 		return "scope: " + getScope() + " collection: " + getCollection() + " options: " + getOptions();
 	}
+
 }

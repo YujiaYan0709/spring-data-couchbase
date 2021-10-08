@@ -24,9 +24,11 @@ import org.springframework.data.couchbase.core.support.InScope;
 import org.springframework.data.couchbase.core.support.WithConsistency;
 import org.springframework.data.couchbase.core.support.WithQuery;
 import org.springframework.data.couchbase.core.support.WithQueryOptions;
+import org.springframework.data.couchbase.core.support.WithTransaction;
 
 import com.couchbase.client.java.query.QueryOptions;
 import com.couchbase.client.java.query.QueryScanConsistency;
+import com.couchbase.transactions.AttemptContextReactive;
 
 /**
  * RemoveBy Query Operations
@@ -124,10 +126,25 @@ public interface ReactiveRemoveByQueryOperation {
 	}
 
 	/**
+	 * Fluent method to specify the transaction
+	 *
+	 * @param <T> the entity type to use for the results.
+	 */
+	interface RemoveByQueryWithTransaction<T> extends RemoveByQueryWithConsistency<T>, WithTransaction<RemoveResult> {
+		/**
+		 * Provide the transaction
+		 *
+		 * @param txCtx - transaction
+		 */
+		@Override
+		RemoveByQueryWithConsistency<T> transaction(AttemptContextReactive txCtx);
+	}
+
+	/**
 	 * Provides methods for constructing query operations in a fluent way.
 	 *
 	 * @param <T> the entity type.
 	 */
-	interface ReactiveRemoveByQuery<T> extends RemoveByQueryWithConsistency<T> {}
+	interface ReactiveRemoveByQuery<T> extends RemoveByQueryWithTransaction<T> {}
 
 }

@@ -510,6 +510,24 @@ public class CouchbaseRepositoryQueryIntegrationTests extends ClusterAwareIntegr
 	}
 
 	@Test
+	void testGroupBy() {
+		String[] iatas = { "JFK", "IAD", "SFO", "SJC", "SEA", "LAX", "PHX" };
+		try {
+			airportRepository.saveAll(
+					Arrays.stream(iatas).map((iata) -> new Airport("airports::" + iata, iata, iata.toLowerCase(Locale.ROOT)))
+							.collect(Collectors.toSet()));
+			List<Airport> airports = airportRepository.groupByIata();
+			for(Airport a:airports){
+				System.out.println(a);
+			}
+
+		} finally {
+			airportRepository
+					.deleteAllById(Arrays.stream(iatas).map((iata) -> "airports::" + iata).collect(Collectors.toSet()));
+		}
+	}
+
+	@Test
 	void badCount() {
 		assertThrows(CouchbaseQueryExecutionException.class, () -> airportRepository.countBad());
 	}
@@ -662,7 +680,7 @@ public class CouchbaseRepositoryQueryIntegrationTests extends ClusterAwareIntegr
 	void deleteAllById() {
 
 		Airport vienna = new Airport("airports::vie", "vie", "LOWW");
-		Airport frankfurt = new Airport("airports::fra", "fra", "EDDF");
+		Airport frankfurt = new Airport("airports::fra", "fra", "EDDZ");
 		Airport losAngeles = new Airport("airports::lax", "lax", "KLAX");
 		try {
 			airportRepository.saveAll(asList(vienna, frankfurt, losAngeles));

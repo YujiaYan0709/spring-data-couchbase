@@ -27,11 +27,13 @@ import org.springframework.data.couchbase.core.support.OneAndAllEntityReactive;
 import org.springframework.data.couchbase.core.support.WithDurability;
 import org.springframework.data.couchbase.core.support.WithExpiry;
 import org.springframework.data.couchbase.core.support.WithInsertOptions;
+import org.springframework.data.couchbase.core.support.WithTransaction;
 
 import com.couchbase.client.core.msg.kv.DurabilityLevel;
 import com.couchbase.client.java.kv.InsertOptions;
 import com.couchbase.client.java.kv.PersistTo;
 import com.couchbase.client.java.kv.ReplicateTo;
+import com.couchbase.transactions.AttemptContextReactive;
 
 /**
  * Insert Operations
@@ -126,11 +128,17 @@ public interface ReactiveInsertByIdOperation {
 		InsertByIdWithDurability<T> withExpiry(Duration expiry);
 	}
 
+	interface InsertByIdWithTransaction<T> extends InsertByIdWithExpiry<T>, WithTransaction<T> {
+
+		@Override
+		InsertByIdWithDurability<T> transaction(AttemptContextReactive txCtx);
+	}
+
 	/**
 	 * Provides methods for constructing KV insert operations in a fluent way.
 	 *
 	 * @param <T> the entity type to insert
 	 */
-	interface ReactiveInsertById<T> extends InsertByIdWithExpiry<T> {}
+	interface ReactiveInsertById<T> extends InsertByIdWithTransaction<T> {}
 
 }

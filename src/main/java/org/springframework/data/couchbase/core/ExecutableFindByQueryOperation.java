@@ -29,10 +29,12 @@ import org.springframework.data.couchbase.core.support.WithConsistency;
 import org.springframework.data.couchbase.core.support.WithDistinct;
 import org.springframework.data.couchbase.core.support.WithQuery;
 import org.springframework.data.couchbase.core.support.WithQueryOptions;
+import org.springframework.data.couchbase.core.support.WithTransaction;
 import org.springframework.lang.Nullable;
 
 import com.couchbase.client.java.query.QueryOptions;
 import com.couchbase.client.java.query.QueryScanConsistency;
+import com.couchbase.transactions.AttemptContextReactive;
 
 /**
  * Query Operations
@@ -287,7 +289,25 @@ public interface ExecutableFindByQueryOperation {
 		 * @throws IllegalArgumentException if field is {@literal null}.
 		 */
 		@Override
-		FindByQueryWithProjection<T> distinct(String[] distinctFields);
+		FindByQueryWithProjecting<T> distinct(String[] distinctFields);
+	}
+
+	/**
+	 * Fluent method to specify transaction
+	 *
+	 * @param <T> the entity type to use for the results.
+	 */
+	interface FindByQueryWithTransaction<T> extends FindByQueryWithDistinct<T>, WithTransaction<T> {
+
+		/**
+		 * Finds the distinct values for a specified {@literal field} across a single collection
+		 *
+		 * @param txCtx Must not be {@literal null}.
+		 * @return new instance of {@link ExecutableFindByQuery}.
+		 * @throws IllegalArgumentException if field is {@literal null}.
+		 */
+		@Override
+		FindByQueryWithDistinct<T> transaction(AttemptContextReactive txCtx);
 	}
 
 	/**
@@ -295,6 +315,6 @@ public interface ExecutableFindByQueryOperation {
 	 *
 	 * @param <T> the entity type to use for the results
 	 */
-	interface ExecutableFindByQuery<T> extends FindByQueryWithDistinct<T> {}
+	interface ExecutableFindByQuery<T> extends FindByQueryWithTransaction<T> {}
 
 }

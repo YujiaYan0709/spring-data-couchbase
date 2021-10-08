@@ -15,6 +15,7 @@
  */
 package org.springframework.data.couchbase.core;
 
+import org.springframework.data.couchbase.core.support.WithTransaction;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -29,6 +30,7 @@ import org.springframework.data.couchbase.core.support.WithGetOptions;
 import org.springframework.data.couchbase.core.support.WithProjectionId;
 
 import com.couchbase.client.java.kv.GetOptions;
+import com.couchbase.transactions.AttemptContextReactive;
 
 /**
  * Get Operations
@@ -137,10 +139,25 @@ public interface ReactiveFindByIdOperation {
 	}
 
 	/**
-	 * Provides methods for constructing query operations in a fluent way.
+	 * Provide transaction
 	 *
 	 * @param <T> the entity type to use for the results
 	 */
-	interface ReactiveFindById<T> extends FindByIdWithExpiry<T> {}
+	interface FindByIdWithTransaction<T> extends FindByIdWithExpiry<T>, WithTransaction<T> {
+		/**
+		 * Provide transaction
+		 *
+		 * @param txCtx
+		 * @return
+		 */
+		FindByIdWithProjection<T> transaction(AttemptContextReactive txCtx);
+	}
+
+	/**
+	 * Provides methods for constructing query operations in a fluent way.
+	 *
+	 * @param <T> the entity type.
+	 */
+	interface ReactiveFindById<T> extends FindByIdWithTransaction<T> {};
 
 }

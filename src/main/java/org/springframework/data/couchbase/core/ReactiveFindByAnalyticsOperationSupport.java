@@ -133,7 +133,7 @@ public class ReactiveFindByAnalyticsOperationSupport implements ReactiveFindByAn
 							cas = row.getLong(TemplateUtils.SELECT_CAS);
 							row.removeKey(TemplateUtils.SELECT_ID);
 							row.removeKey(TemplateUtils.SELECT_CAS);
-							return support.decodeEntity(id, row.toString(), cas, returnType);
+							return support.decodeEntity(id, row.toString(), cas, returnType, null);
 						});
 			});
 		}

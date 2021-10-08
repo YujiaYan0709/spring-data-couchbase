@@ -27,11 +27,13 @@ import org.springframework.data.couchbase.core.support.OneAndAllEntityReactive;
 import org.springframework.data.couchbase.core.support.WithDurability;
 import org.springframework.data.couchbase.core.support.WithExpiry;
 import org.springframework.data.couchbase.core.support.WithReplaceOptions;
+import org.springframework.data.couchbase.core.support.WithTransaction;
 
 import com.couchbase.client.core.msg.kv.DurabilityLevel;
 import com.couchbase.client.java.kv.PersistTo;
 import com.couchbase.client.java.kv.ReplaceOptions;
 import com.couchbase.client.java.kv.ReplicateTo;
+import com.couchbase.transactions.AttemptContextReactive;
 
 /**
  * ReplaceOperations
@@ -127,11 +129,16 @@ public interface ReactiveReplaceByIdOperation {
 		ReplaceByIdWithDurability<T> withExpiry(final Duration expiry);
 	}
 
+	interface ReplaceByIdWithTransaction<T> extends ReplaceByIdWithExpiry<T>, WithTransaction<T> {
+		@Override
+		ReplaceByIdWithExpiry<T> transaction(final AttemptContextReactive txCtx);
+	}
+
 	/**
 	 * Provides methods for constructing KV replace operations in a fluent way.
 	 *
 	 * @param <T> the entity type to replace
 	 */
-	interface ReactiveReplaceById<T> extends ReplaceByIdWithExpiry<T> {}
+	interface ReactiveReplaceById<T> extends ReplaceByIdWithTransaction<T> {};
 
 }
